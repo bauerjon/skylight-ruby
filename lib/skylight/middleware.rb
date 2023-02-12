@@ -87,8 +87,10 @@ module Skylight
         return @app.call(env)
       end
 
-      if env["REQUEST_METHOD"] == "HEAD"
-        t { "middleware skipping HEAD" }
+      ignored_endpoints_regex_array = @config.instance_variable_get('@values')[:ignored_endpoints_regex] || []
+      
+      if env["REQUEST_METHOD"] == "HEAD" ||  ignored_endpoints_regex_array.any?{|regex| env['PATH_INFO'] =~ /#{regex}/}
+        t { "middleware skipping" }
         @app.call(env)
       else
         begin
